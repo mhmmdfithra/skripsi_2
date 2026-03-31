@@ -1,0 +1,58 @@
+# Copyright (C) 2017 NVIDIA Corporation.  All rights reserved.
+# Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
+
+# logger options
+image_save_iter: 10
+image_display_iter: 10
+display_size: 1
+snapshot_save_iter: 10
+log_iter: 10
+
+# optimization options
+max_iter: 20
+batch_size: 1
+weight_decay: 0.0001
+beta1: 0.5
+beta2: 0.999
+init: kaiming
+lr: 0.0001
+lr_policy: step
+step_size: 100000
+gamma: 0.5
+gan_w: 1
+recon_x_w: 10
+recon_s_w: 1
+recon_c_w: 1
+recon_x_cyc_w: 0
+vgg_w: 0
+
+# model options
+gen:
+  dim: 32
+  mlp_dim: 128
+  style_dim: 8
+  activ: relu
+  n_downsample: 2
+  n_res: 2
+  pad_type: reflect
+dis:
+  dim: 32
+  norm: none
+  activ: lrelu
+  n_layer: 3
+  gan_type: lsgan
+  num_scales: 2
+  pad_type: reflect
+
+# data options
+# Supports either:
+# - data_root/trainA, trainB, testA, testB
+# - data_root/train/trainA, train/trainB, test/testA, test/testB
+input_dim_a: 3
+eval_iter: 10 #eval fid dan lpips
+input_dim_b: 3
+num_workers: 0
+new_size: 128
+crop_image_height: 128
+crop_image_width: 128
+data_root: ./datasets

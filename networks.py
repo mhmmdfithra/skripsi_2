@@ -229,7 +229,7 @@ class Decoder(nn.Module):
         self.model += [ResBlocks(n_res, dim, res_norm, activ, pad_type=pad_type)]
         # upsampling blocks
         for i in range(n_upsample):
-            self.model += [nn.Upsample(scale_factor=2),
+            self.model += [Interpolate(scale_factor=2, mode='nearest'),
                            Conv2dBlock(dim, dim // 2, 5, 1, 2, norm='ln', activation=activ, pad_type=pad_type)]
             dim //= 2
         # use reflection padding in the last conv layer
@@ -252,6 +252,16 @@ class ResBlocks(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+
+class Interpolate(nn.Module):
+    def __init__(self, scale_factor, mode='nearest'):
+        super(Interpolate, self).__init__()
+        self.scale_factor = scale_factor
+        self.mode = mode
+
+    def forward(self, x):
+        return F.interpolate(x, scale_factor=self.scale_factor, mode=self.mode)
 
 class MLP(nn.Module):
     def __init__(self, input_dim, output_dim, dim, n_blk, norm='none', activ='relu'):

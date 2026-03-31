@@ -8,6 +8,7 @@ from networks import Vgg16
 from torch.autograd import Variable
 from torch.optim import lr_scheduler
 from torchvision import transforms
+from torchvision.models import inception_v3
 from data import ImageFilelist, ImageFolder
 import torch
 import torch.nn as nn
@@ -50,13 +51,26 @@ def get_all_data_loaders(conf):
     width = conf['crop_image_width']
 
     if 'data_root' in conf:
-        train_loader_a = get_data_loader_folder(os.path.join(conf['data_root'], 'trainA'), batch_size, True,
+        data_root = conf['data_root']
+        if 'train_root' in conf and 'test_root' in conf:
+            train_root = conf['train_root']
+            test_root = conf['test_root']
+        elif os.path.isdir(os.path.join(data_root, 'trainA')) and os.path.isdir(os.path.join(data_root, 'testA')):
+            train_root = data_root
+            test_root = data_root
+        elif os.path.isdir(os.path.join(data_root, 'train', 'trainA')) and os.path.isdir(os.path.join(data_root, 'test', 'testA')):
+            train_root = os.path.join(data_root, 'train')
+            test_root = os.path.join(data_root, 'test')
+        else:
+            raise ValueError('Could not find dataset folders under %s' % data_root)
+
+        train_loader_a = get_data_loader_folder(os.path.join(train_root, 'trainA'), batch_size, True,
                                               new_size_a, height, width, num_workers, True)
-        test_loader_a = get_data_loader_folder(os.path.join(conf['data_root'], 'testA'), batch_size, False,
+        test_loader_a = get_data_loader_folder(os.path.join(test_root, 'testA'), batch_size, False,
                                              new_size_a, new_size_a, new_size_a, num_workers, True)
-        train_loader_b = get_data_loader_folder(os.path.join(conf['data_root'], 'trainB'), batch_size, True,
+        train_loader_b = get_data_loader_folder(os.path.join(train_root, 'trainB'), batch_size, True,
                                               new_size_b, height, width, num_workers, True)
-        test_loader_b = get_data_loader_folder(os.path.join(conf['data_root'], 'testB'), batch_size, False,
+        test_loader_b = get_data_loader_folder(os.path.join(test_root, 'testB'), batch_size, False,
                                              new_size_b, new_size_b, new_size_b, num_workers, True)
     else:
         train_loader_a = get_data_loader_list(conf['data_folder_train_a'], conf['data_list_train_a'], batch_size, True,
@@ -99,7 +113,7 @@ def get_data_loader_folder(input_folder, batch_size, train, new_size=None,
 
 def get_config(config):
     with open(config, 'r') as stream:
-        return yaml.load(stream)
+        return yaml.safe_load(stream)
 
 
 def eformat(f, prec):
